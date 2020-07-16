@@ -34,7 +34,7 @@ public class MyController {
     @Autowired //don't forget the setter
     private UserRepository repository;
     @PostMapping("/addUser")
-    public  String  processForm(User user){
+    public  String  processForm(User user,Model model){
         // save a few customers
         if(user.name.isEmpty() || user.pass.isEmpty()){return "error1";
         }
@@ -48,7 +48,8 @@ public class MyController {
         }catch(IndexOutOfBoundsException e){
                 System.out.println("exception occured"+e.toString());
                 repository.save(new Users(user.name, passwordEncoder.encode(user.pass)));
-                return "showMessage";
+                model.addAttribute("loguser", new LogUser());
+                return "redirect:userLogin";
             }
 
 
@@ -62,15 +63,15 @@ public class MyController {
         return "login";
     }
     @PostMapping("/userLogin")
-    public String processUser(LogUser loguser) {
+    public String processUser(LogUser loguser,Model model) {
         if (loguser.uname.equals("")) {
 
-            return "error1";
+            return "redirect:userLogin";
         } else {try{
             Users pass = repository.findByName(loguser.uname).get(0);
             if (pass.toString().isEmpty()) {/* if pass provided is emplty*/
 
-                return "error1";
+                return "redirect:userLogin";
             } else{
                 String tpass = pass.toString();
             String sep = "pass=";
@@ -88,15 +89,16 @@ public class MyController {
                 return "plogin";
 
             } else {
+                model.addAttribute("loguser", new LogUser());
 
-                return "error1";
+                return "invalidCreds";
             }
 
         }
     }catch(IndexOutOfBoundsException e){
 
             System.out.println("exception occured"+e.toString());
-            return "error1";
+            return "redirect:userLogin";
 
         }
 
